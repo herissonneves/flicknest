@@ -1,0 +1,72 @@
+.app {
+  max-width: var(--fn-content-max-width);
+  margin-inline: auto;
+  padding: var(--fn-space-12) var(--fn-space-6);
+}
+
+.app h1 {
+  margin: 0 0 var(--fn-space-3);
+  font: var(--fn-font-heading);
+}
+
+.app p {
+  margin: 0;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--fn-space-6);
+  margin-bottom: var(--fn-space-8);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--fn-control-min-height);
+  font: var(--fn-font-brand);
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+}
+
+@media (min-width: 48rem) {
+  .header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.mainNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--fn-space-4);
+}
+
+.mainNav a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--fn-control-min-height);
+  padding: var(--fn-space-3) var(--fn-space-4);
+  border-radius: var(--fn-radius-full);
+  font: var(--fn-font-label);
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+  text-underline-offset: 0.25rem;
+}
+
+.mainNav a[aria-current='page'] {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+.brand:focus-visible,
+.mainNav a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}

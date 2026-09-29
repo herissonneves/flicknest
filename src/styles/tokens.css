@@ -1,0 +1,44 @@
+:root {
+  color-scheme: light;
+
+  --md-sys-color-surface: #fcf8ff;
+  --md-sys-color-on-surface: #1b1b21;
+  --md-sys-color-on-surface-variant: #47464f;
+  --md-sys-color-primary: #5a5892;
+  --md-sys-color-secondary-container: #dfe0ff;
+  --md-sys-color-on-secondary-container: #3b4279;
+
+  /* Espaçamento */
+  --fn-space-3: 0.75rem;
+  --fn-space-4: 1rem;
+  --fn-space-6: 1.5rem;
+  --fn-space-8: 2rem;
+  --fn-space-12: 3rem;
+
+  /* Layout */
+  --fn-content-max-width: 64rem;
+
+  /* Tipografia */
+  --fn-font-brand: 700 1.25rem/1.5 var(--fn-font-family);
+  --fn-font-family: system-ui, sans-serif;
+  --fn-font-body: 400 1rem/1.5 var(--fn-font-family);
+  --fn-font-heading: 400 1.75rem/2.25rem var(--fn-font-family);
+  --fn-font-label: 500 0.875rem/1.25rem var(--fn-font-family);
+
+  /* Formas e interação */
+  --fn-radius-full: 999px;
+  --fn-control-min-height: 3rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --md-sys-color-surface: #131318;
+    --md-sys-color-on-surface: #e5e1e9;
+    --md-sys-color-on-surface-variant: #c8c5d0;
+    --md-sys-color-primary: #c3c0ff;
+    --md-sys-color-secondary-container: #3b4279;
+    --md-sys-color-on-secondary-container: #dfe0ff;
+  }
+}
