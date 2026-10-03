@@ -4,54 +4,115 @@ Aplicação para descobrir e organizar filmes e séries em uma biblioteca pessoa
 
 ## Estado atual
 
-A estrutura inicial inclui:
+A estrutura atual inclui:
 
 - Home, Busca, Minha biblioteca e página não encontrada;
 - navegação com React Router, com indicação da página ativa;
 - layout compartilhado com cabeçalho, navegação e conteúdo principal;
 - temas claro e escuro que acompanham a preferência do sistema;
-- tokens de design baseados no tema Material Design 3 e estilos com CSS Modules.
+- tokens de design baseados no tema Material Design 3 e estilos com CSS Modules;
+- modelo de domínio `MediaItem`, compartilhado entre filmes e séries;
+- cliente HTTP da TMDB com tratamento de erro e cancelamento;
+- serviços de filmes e séries populares, com conversão dos dados da TMDB para o modelo do FlickNest.
 
-As páginas ainda têm conteúdo inicial. A integração com a TMDB, a busca de títulos e a biblioteca pessoal com persistência em `localStorage` fazem parte do plano da V1 e ainda serão implementadas.
+Os serviços foram validados manualmente no console do navegador. As páginas ainda têm conteúdo inicial e não consomem esses dados. A Home com conteúdo da TMDB, a busca de títulos e a biblioteca pessoal com persistência em `localStorage` permanecem no plano da V1.
 
 ## Stack
 
 - React e TypeScript;
 - Vite;
 - React Router em modo declarativo;
+- Fetch API;
 - CSS Modules e CSS custom properties;
 - ESLint, Prettier e EditorConfig;
 - pnpm.
 
 ## Executar localmente
 
-Com Node.js e pnpm disponíveis, execute na raiz do repositório:
+Com Node.js e pnpm disponíveis, instale as dependências na raiz do repositório:
 
 ```bash
 pnpm install
+```
+
+Crie o arquivo local de configuração a partir do exemplo:
+
+```bash
+cp -n .env.example .env.local
+```
+
+A opção `-n` preserva o arquivo caso `.env.local` já exista. Abra `.env.local` no editor e preencha a variável com seu **API Read Access Token**, obtido nas configurações de API da TMDB. A [documentação de autenticação da TMDB](https://developer.themoviedb.org/docs/authentication-application) descreve esse token e seu uso no cabeçalho `Authorization: Bearer`.
+
+```dotenv
+TMDB_READ_ACCESS_TOKEN=cole_aqui_seu_token_de_leitura
+```
+
+O valor acima é ilustrativo. `.env.example` mantém apenas o nome da variável, sem credencial; `.env.local` é ignorado pelo Git pela regra `*.local`.
+
+Inicie o servidor:
+
+```bash
 pnpm dev
 ```
 
-Abra o endereço informado pelo Vite no terminal. O projeto registra `pnpm@12.6.0` no campo `packageManager` do [package.json](package.json).
+Abra o endereço informado pelo Vite no terminal. Reinicie o servidor após alterar `.env.local`. A configuração atual exige um token preenchido para iniciar o servidor de desenvolvimento.
 
-O comando `pnpm dev` executa o script `dev` do projeto. Esse script chama o Vite instalado localmente nas dependências de desenvolvimento.
+O projeto registra `pnpm@12.6.0` no campo `packageManager` do [package.json](package.json). O comando `pnpm dev` executa o script `dev` do projeto. Esse script chama o Vite instalado localmente nas dependências de desenvolvimento.
+
+## Integração com a TMDB
+
+O navegador consulta caminhos relativos sob `/api/tmdb/`. Durante o desenvolvimento, o proxy configurado em [vite.config.ts](vite.config.ts) encaminha essas requisições para `https://api.themoviedb.org/3/` e adiciona o token ao cabeçalho da chamada feita pelo servidor.
+
+`TMDB_READ_ACCESS_TOKEN` é lido na configuração do Vite com `loadEnv`. A variável não usa o prefixo `VITE_`, que expõe valores ao código do navegador. O cliente HTTP não recebe a credencial.
+
+### Responsabilidades
+
+- [media.ts](src/types/media.ts): define `MediaType` e o modelo interno `MediaItem`.
+- [tmdb.client.ts](src/api/tmdb/tmdb.client.ts): centraliza `fetch`, o caminho base, a verificação de erro HTTP e o encaminhamento de `AbortSignal`.
+- [tmdb.types.ts](src/api/tmdb/tmdb.types.ts): descreve os DTOs de filmes e séries e a resposta paginada da TMDB.
+- [tmdb.mappers.ts](src/api/tmdb/tmdb.mappers.ts): transforma DTOs em `MediaItem`, unificando título, ano, poster, sinopse e nota.
+- [movies.service.ts](src/api/tmdb/movies.service.ts): fornece `getPopularMovies(signal?)`.
+- [tv.service.ts](src/api/tmdb/tv.service.ts): fornece `getPopularTvShows(signal?)`.
+
+Os dois serviços retornam `Promise<MediaItem[]>`. Isso permite que os componentes usem o formato do FlickNest: por exemplo, filmes e séries têm `title`, embora a TMDB use `name` para séries. A configuração HTTP fica no cliente, e a transformação fica nos mappers.
+
+Nesta etapa, os serviços consultam a primeira página com idioma `pt-BR`. A paginação da resposta permanece dentro da camada da TMDB. Os mappers tratam ano ausente, poster nulo, sinopse vazia e ausência de votos; nota `0` é preservada quando existem votos. Os posters usam URLs com tamanho `w500`.
+
+`tmdbGet` lança um erro quando a resposta HTTP não é bem-sucedida. Erros de rede e cancelamento são propagados. Os tipos e a asserção sobre o JSON descrevem o formato esperado, sem validar a resposta em tempo de execução.
+
+A camada usa `fetch` para praticar requisição, erro, cancelamento e transformação de dados. Axios e TanStack Query não foram adicionados; TanStack Query permanece como evolução posterior para estudar cache e estado remoto a partir deste fluxo já compreendido.
+
+### Desenvolvimento e deploy
+
+O proxy desta etapa funciona com `pnpm dev`. `pnpm build` e `pnpm preview` não exigem o token na configuração atual, mas também não disponibilizam a rota `/api/tmdb/`.
+
+Antes do deploy na Vercel, será necessário implementar uma rota serverless `/api/tmdb/*` para encaminhar as chamadas e manter o token no servidor. Essa rota ainda não foi criada.
+
+Referências: [Vite — variáveis de ambiente](https://vite.dev/guide/env-and-mode), [Vite — proxy do servidor](https://vite.dev/config/server-options#server-proxy) e [TMDB — URLs de imagens](https://developer.themoviedb.org/docs/image-basics).
 
 ## Comandos
 
-| Comando             | Finalidade                                                               |
-| ------------------- | ------------------------------------------------------------------------ |
-| `pnpm dev`          | Inicia o servidor de desenvolvimento.                                    |
-| `pnpm build`        | Verifica os tipos com TypeScript e gera o build em `dist`.               |
-| `pnpm preview`      | Serve o build gerado para conferência local; execute `pnpm build` antes. |
-| `pnpm lint`         | Verifica as regras do ESLint.                                            |
-| `pnpm lint:fix`     | Aplica as correções automáticas disponíveis no ESLint.                   |
-| `pnpm format`       | Aplica a formatação com Prettier.                                        |
-| `pnpm format:check` | Confere a formatação sem alterar arquivos.                               |
+| Comando             | Finalidade                                                             |
+| ------------------- | ---------------------------------------------------------------------- |
+| `pnpm dev`          | Inicia o servidor de desenvolvimento com o proxy da TMDB.              |
+| `pnpm build`        | Verifica os tipos com TypeScript e gera o build em `dist`.             |
+| `pnpm preview`      | Serve o build gerado, sem o proxy da TMDB; execute `pnpm build` antes. |
+| `pnpm lint`         | Verifica as regras do ESLint.                                          |
+| `pnpm lint:fix`     | Aplica as correções automáticas disponíveis no ESLint.                 |
+| `pnpm format`       | Aplica a formatação com Prettier.                                      |
+| `pnpm format:check` | Confere a formatação sem alterar arquivos.                             |
 
 ## Organização inicial
 
 ```text
 src/
+├── api/
+│   └── tmdb/
+│       ├── tmdb.client.ts
+│       ├── tmdb.types.ts
+│       ├── tmdb.mappers.ts
+│       ├── movies.service.ts
+│       └── tv.service.ts
 ├── app/
 │   ├── AppShell.tsx
 │   └── AppShell.module.css
@@ -60,6 +121,7 @@ src/
 │   ├── search/SearchPage.tsx
 │   └── library/LibraryPage.tsx
 ├── styles/tokens.css
+├── types/media.ts
 ├── App.tsx
 ├── NotFoundPage.tsx
 ├── index.css
@@ -67,6 +129,18 @@ src/
 ```
 
 `main.tsx` inicia o React e disponibiliza o `BrowserRouter`. `App.tsx` associa os endereços às páginas, e `AppShell` fornece o layout compartilhado usando composição com `children`.
+
+## Validação
+
+Após alterações de código, execute:
+
+```bash
+pnpm format:check
+pnpm lint
+pnpm build
+```
+
+Na integração inicial da TMDB, foram verificados manualmente: filmes e séries populares convertidos para `MediaItem[]`, erro HTTP 404, cancelamento com `AbortController`, campos opcionais ausentes, extração do ano e preservação de nota zero quando existem votos. Os testes automatizados permanecem no plano da V1.
 
 ## Documentação
 
