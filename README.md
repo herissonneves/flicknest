@@ -12,10 +12,11 @@ A estrutura atual inclui:
 - temas claro e escuro que acompanham a preferência do sistema;
 - tokens de design baseados no tema Material Design 3 e estilos com CSS Modules;
 - modelo de domínio `MediaItem`, compartilhado entre filmes e séries;
+- componente `MediaCard` reutilizável para apresentar filmes e séries;
 - cliente HTTP da TMDB com tratamento de erro e cancelamento;
 - serviços de filmes e séries populares, com conversão dos dados da TMDB para o modelo do FlickNest.
 
-Os serviços foram validados manualmente no console do navegador. As páginas ainda têm conteúdo inicial e não consomem esses dados. A Home com conteúdo da TMDB, a busca de títulos e a biblioteca pessoal com persistência em `localStorage` permanecem no plano da V1.
+Os serviços foram validados manualmente no console do navegador. A Home apresenta uma lista de exemplos locais com `MediaCard` e ainda não consulta os serviços da TMDB. A integração da Home com esses serviços, a busca de títulos e a biblioteca pessoal com persistência em `localStorage` permanecem no plano da V1.
 
 ## Stack
 
@@ -116,6 +117,10 @@ src/
 ├── app/
 │   ├── AppShell.tsx
 │   └── AppShell.module.css
+├── components/
+│   └── MediaCard/
+│       ├── MediaCard.tsx
+│       └── MediaCard.module.css
 ├── features/
 │   ├── home/HomePage.tsx
 │   ├── search/SearchPage.tsx
@@ -130,6 +135,10 @@ src/
 
 `main.tsx` inicia o React e disponibiliza o `BrowserRouter`. `App.tsx` associa os endereços às páginas, e `AppShell` fornece o layout compartilhado usando composição com `children`.
 
+[MediaCard.tsx](src/components/MediaCard/MediaCard.tsx) recebe a prop `media: MediaItem` e apresenta pôster, título, tipo, ano e nota. Quando falta a URL do pôster, mostra “Pôster não disponível”. Ano e nota ausentes também têm mensagens próprias; a verificação explícita de `undefined` preserva a nota `0`, exibida como `0.0 / 10`. O componente usa CSS Modules e os tokens do tema.
+
+[HomePage.tsx](src/features/home/HomePage.tsx) renderiza os exemplos com `.map()` e fornece uma `key` estável formada por tipo e ID (`${media.type}-${media.id}`). Assim, um filme e uma série com o mesmo ID numérico têm chaves distintas na lista, como `movie-1` e `tv-1`.
+
 ## Validação
 
 Após alterações de código, execute:
@@ -140,7 +149,11 @@ pnpm lint
 pnpm build
 ```
 
-Na integração inicial da TMDB, foram verificados manualmente: filmes e séries populares convertidos para `MediaItem[]`, erro HTTP 404, cancelamento com `AbortController`, campos opcionais ausentes, extração do ano e preservação de nota zero quando existem votos. Os testes automatizados permanecem no plano da V1.
+Na integração inicial da TMDB, foram verificados manualmente: filmes e séries populares convertidos para `MediaItem[]`, erro HTTP 404, cancelamento com `AbortController`, campos opcionais ausentes, extração do ano e preservação de nota zero quando existem votos.
+
+No `MediaCard`, foram verificados manualmente: apresentação nos temas claro e escuro, ano e nota ausentes, preservação da nota zero e mensagem quando falta a URL do pôster. A lista de exemplos da Home também foi conferida com títulos longos, largura de 320 px, zoom de 200% e um filme e uma série com o mesmo ID numérico, sem avisos de chaves duplicadas no console.
+
+Os testes automatizados permanecem no plano da V1.
 
 ## Documentação
 
