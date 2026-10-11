@@ -16,7 +16,9 @@ A estrutura atual inclui:
 - cliente HTTP da TMDB com tratamento de erro e cancelamento;
 - serviços de filmes e séries populares, com conversão dos dados da TMDB para o modelo do FlickNest.
 
-Os serviços foram validados manualmente no console do navegador. A Home apresenta uma lista de exemplos locais com `MediaCard` e ainda não consulta os serviços da TMDB. A integração da Home com esses serviços, a busca de títulos e a biblioteca pessoal com persistência em `localStorage` permanecem no plano da V1.
+A Home consulta filmes e séries populares pela TMDB e apresenta os resultados em seções com grades responsivas. Trata carregamento, sucesso, listas vazias e erro, além de cancelar as consultas ao sair da página.
+
+A SearchBar permite enviar um título por Enter ou pelo botão Buscar e navega para `/search?q=...`. A consulta de resultados da busca à TMDB, os filtros, a paginação e a biblioteca pessoal com persistência em `localStorage` permanecem no plano da V1.
 
 ## Stack
 
@@ -118,11 +120,16 @@ src/
 │   ├── AppShell.tsx
 │   └── AppShell.module.css
 ├── components/
-│   └── MediaCard/
-│       ├── MediaCard.tsx
-│       └── MediaCard.module.css
+│   ├── MediaCard/
+│   │   ├── MediaCard.tsx
+│   │   └── MediaCard.module.css
+│   └── SearchBar/
+│       ├── SearchBar.tsx
+│       └── SearchBar.module.css
 ├── features/
-│   ├── home/HomePage.tsx
+│   ├── home/
+│   │   ├── HomePage.tsx
+│   │   └── HomePage.module.css
 │   ├── search/SearchPage.tsx
 │   └── library/LibraryPage.tsx
 ├── styles/tokens.css
@@ -137,7 +144,13 @@ src/
 
 [MediaCard.tsx](src/components/MediaCard/MediaCard.tsx) recebe a prop `media: MediaItem` e apresenta pôster, título, tipo, ano e nota. Quando falta a URL do pôster, mostra “Pôster não disponível”. Ano e nota ausentes também têm mensagens próprias; a verificação explícita de `undefined` preserva a nota `0`, exibida como `0.0 / 10`. O componente usa CSS Modules e os tokens do tema.
 
-[HomePage.tsx](src/features/home/HomePage.tsx) renderiza os exemplos com `.map()` e fornece uma `key` estável formada por tipo e ID (`${media.type}-${media.id}`). Assim, um filme e uma série com o mesmo ID numérico têm chaves distintas na lista, como `movie-1` e `tv-1`.
+[HomePage.tsx](src/features/home/HomePage.tsx) mantém filmes, séries, carregamento e erro em estado local com `useState`. Um `useEffect` inicia as duas consultas com `Promise.all` e um AbortSignal compartilhado. A limpeza do efeito cancela as consultas; verificações de `signal.aborted` impedem atualizações de estado após o cancelamento.
+
+Carregamento e erro são compartilhados: os resultados aparecem quando as duas consultas têm sucesso; se uma falhar, a Home apresenta o erro geral. Cada seção trata sua lista vazia separadamente. `Promise.all` não cancela automaticamente a outra consulta quando uma falha.
+
+A Home controla a disposição dos cards com CSS Grid e tokens de espaçamento. Cada MediaCard organiza seu próprio conteúdo. As listas usam chaves estáveis por tipo e ID (`${media.type}-${media.id}`), e a hierarquia usa `h1` para a página, `h2` para as seções e `h3` para os títulos dos cards.
+
+[SearchBar.tsx](src/components/SearchBar/SearchBar.tsx) controla o texto digitado e comunica o envio por `onSearch`. O formulário possui label associado ao campo por `useId`, impede o envio padrão com `preventDefault()` e ignora termos vazios ou somente com espaços. A Home codifica o termo com `URLSearchParams` e navega com `useNavigate`.
 
 ## Validação
 
@@ -152,6 +165,10 @@ pnpm build
 Na integração inicial da TMDB, foram verificados manualmente: filmes e séries populares convertidos para `MediaItem[]`, erro HTTP 404, cancelamento com `AbortController`, campos opcionais ausentes, extração do ano e preservação de nota zero quando existem votos.
 
 No `MediaCard`, foram verificados manualmente: apresentação nos temas claro e escuro, ano e nota ausentes, preservação da nota zero e mensagem quando falta a URL do pôster. A lista de exemplos da Home também foi conferida com títulos longos, largura de 320 px, zoom de 200% e um filme e uma série com o mesmo ID numérico, sem avisos de chaves duplicadas no console.
+
+Na Home, foram validados manualmente: filmes e séries reais, filmes vazios com séries disponíveis, séries vazias com filmes disponíveis e ambas as listas vazias. Também foram testados erro HTTP em cada serviço separadamente e cancelamento das duas consultas ao sair da página. As simulações temporárias foram removidas.
+
+Na SearchBar, foram verificados label, foco por teclado, botão desativado para texto vazio, envio por Enter e clique, termos com espaços, acentos e `&` e retorno pelo histórico. Home e SearchBar foram conferidas nos temas claro e escuro, em telas estreitas e largas e com zoom de 200%.
 
 Os testes automatizados permanecem no plano da V1.
 
