@@ -1,6 +1,6 @@
 .card {
-  max-width: 16rem;
-  margin-block-start: var(--fn-space-6);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .poster {

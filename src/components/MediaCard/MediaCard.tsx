@@ -19,7 +19,7 @@ function MediaCard({ media }: MediaCardProps) {
           <span className={styles.posterFallback}>Pôster não disponível</span>
         )}
       </div>
-      <h2>{media.title}</h2>
+      <h3>{media.title}</h3>
       <p>{media.type === 'movie' ? 'Filme' : 'Série'}</p>
       <p>
         {media.year !== undefined ? `Ano: ${media.year}` : 'Ano não informado'}
