@@ -9,3 +9,9 @@ export interface MediaItem {
   overview?: string
   rating?: number
 }
+
+export interface MediaSearchResult {
+  items: MediaItem[]
+  page: number
+  totalPages: number
+}

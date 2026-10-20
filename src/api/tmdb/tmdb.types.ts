@@ -1,7 +1,7 @@
 export interface TmdbMovieDto {
   id: number
   title: string
-  release_date: string
+  release_date?: string
   poster_path: string | null
   overview: string
   vote_average: number
@@ -11,7 +11,7 @@ export interface TmdbMovieDto {
 export interface TmdbTvDto {
   id: number
   name: string
-  first_air_date: string
+  first_air_date?: string
   poster_path: string | null
   overview: string
   vote_average: number
@@ -24,3 +24,12 @@ export interface TmdbPaginatedResponse<TItem> {
   total_pages: number
   total_results: number
 }
+
+export type TmdbMultiResultDto =
+  | (TmdbMovieDto & { media_type: 'movie' })
+  | (TmdbTvDto & { media_type: 'tv' })
+  | {
+      id: number
+      name: string
+      media_type: 'person'
+    }

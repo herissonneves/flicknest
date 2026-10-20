@@ -4,11 +4,12 @@ import styles from './SearchBar.module.css'
 
 interface SearchBarProps {
   onSearch: (query: string) => void
+  initialQuery?: string
 }
 
-function SearchBar({ onSearch }: SearchBarProps) {
+function SearchBar({ onSearch, initialQuery = '' }: SearchBarProps) {
   const inputId = useId()
-  const [query, setQuery] = useState<string>('')
+  const [query, setQuery] = useState<string>(initialQuery)
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()

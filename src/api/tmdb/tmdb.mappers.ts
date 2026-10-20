@@ -1,7 +1,11 @@
 import type { TmdbMovieDto, TmdbTvDto } from './tmdb.types.ts'
 import type { MediaItem } from '../../types/media.ts'
 
-function extractYear(date: string): number | undefined {
+function extractYear(date: string | undefined): number | undefined {
+  if (!date) {
+    return undefined
+  }
+
   const year = date.slice(0, 4)
 
   if (!/^\d{4}$/.test(year) || year === '0000') {

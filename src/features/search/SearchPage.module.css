@@ -1,0 +1,27 @@
+.filter {
+  display: grid;
+  gap: var(--fn-space-3);
+  max-width: 20rem;
+  margin-block: var(--fn-space-6);
+}
+
+.label {
+  font: var(--fn-font-label);
+}
+
+.select {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--fn-control-min-height);
+  padding: var(--fn-space-3) var(--fn-space-4);
+  border: 1px solid var(--md-sys-color-on-surface-variant);
+  border-radius: var(--fn-radius-full);
+  font: inherit;
+  color: var(--md-sys-color-on-surface);
+  background-color: var(--md-sys-color-surface);
+}
+
+.select:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 4px;
+}
