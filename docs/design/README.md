@@ -25,14 +25,14 @@ O export contém seis esquemas: claro e escuro, cada um com variantes de contras
 
 Os papéis selecionados foram copiados para [tokens.css](../../src/styles/tokens.css). O JSON é a referência de design e não é importado pela aplicação em tempo de execução. Ao atualizar o tema, confira também os valores CSS dos dois esquemas e os pares de fundo e conteúdo.
 
-| Papel no JSON          | Uso atual                                                      |
-| ---------------------- | -------------------------------------------------------------- |
-| `surface`              | Fundo da aplicação e do campo de busca.                        |
-| `onSurface`            | Texto principal e texto digitado na busca.                     |
-| `onSurfaceVariant`     | Texto secundário, borda e placeholder do campo de busca.       |
-| `primary`              | Marca, links e contorno de foco da SearchBar.                  |
-| `secondaryContainer`   | Fundo do item ativo, da área do pôster e do botão Buscar.      |
-| `onSecondaryContainer` | Texto do item ativo, da mensagem sem pôster e do botão Buscar. |
+| Papel no JSON          | Uso atual                                                                                   |
+| ---------------------- | ------------------------------------------------------------------------------------------- |
+| `surface`              | Fundo da aplicação, campo de busca, seletor e botões de paginação indisponíveis.            |
+| `onSurface`            | Texto principal, texto digitado e opções do seletor.                                        |
+| `onSurfaceVariant`     | Texto secundário, placeholder, bordas dos campos e texto e borda da paginação indisponível. |
+| `primary`              | Marca, links e contornos de foco dos controles.                                             |
+| `secondaryContainer`   | Fundo do item ativo, área do pôster e botões de busca e paginação habilitados.              |
+| `onSecondaryContainer` | Conteúdo sobre os fundos de secondaryContainer.                                             |
 
 O tema claro é definido no primeiro `:root`. A consulta `prefers-color-scheme: dark` substitui as cores quando o sistema ou navegador informa preferência pelo tema escuro. `color-scheme` informa ao navegador qual esquema está ativo para os elementos que ele desenha.
 
@@ -59,16 +59,20 @@ A escala tem como referência uma unidade de `0.25rem`:
 
 A família atual é `system-ui, sans-serif`. Os tokens tipográficos agrupam peso, tamanho, altura de linha e família para uso com a propriedade `font`.
 
-| Token               | Função                        | Peso  | Tamanho    | Altura de linha |
-| ------------------- | ----------------------------- | ----- | ---------- | --------------- |
-| `--fn-font-brand`   | Nome FlickNest no cabeçalho   | `700` | `1.25rem`  | `1.5`           |
-| `--fn-font-body`    | Texto comum                   | `400` | `1rem`     | `1.5`           |
-| `--fn-font-heading` | Título da página              | `400` | `1.75rem`  | `2.25rem`       |
-| `--fn-font-label`   | Menu, rótulo e botão de busca | `500` | `0.875rem` | `1.25rem`       |
+| Token               | Função                      | Peso  | Tamanho    | Altura de linha |
+| ------------------- | --------------------------- | ----- | ---------- | --------------- |
+| `--fn-font-brand`   | Nome FlickNest no cabeçalho | `700` | `1.25rem`  | `1.5`           |
+| `--fn-font-body`    | Texto comum                 | `400` | `1rem`     | `1.5`           |
+| `--fn-font-heading` | Título da página            | `400` | `1.75rem`  | `2.25rem`       |
+| `--fn-font-label`   | Menu, rótulo e botões       | `500` | `0.875rem` | `1.25rem`       |
 
 Uma altura de linha sem unidade, como `1.5`, multiplica o tamanho da fonte do próprio elemento.
 
-`--fn-radius-full: 999px` produz as extremidades arredondadas dos itens de navegação, do campo de busca e do botão Buscar. `--fn-control-min-height: 3rem` define uma altura mínima para os links do menu e da marca e para os controles da SearchBar, permitindo crescimento com o conteúdo.
+`--fn-radius-full: 999px` produz as extremidades arredondadas dos itens
+de navegação e dos controles de busca, filtro e paginação.
+
+`--fn-control-min-height: 3rem` define a altura mínima dos links do
+cabeçalho e desses controles, permitindo crescimento com o conteúdo.
 
 ## Organização dos estilos
 
@@ -78,6 +82,9 @@ Uma altura de linha sem unidade, como `1.5`, multiplica o tamanho da fonte do pr
 - [HomePage.module.css](../../src/features/home/HomePage.module.css): espaçamento das seções e grade responsiva dos cards.
 - [MediaCard.module.css](../../src/components/MediaCard/MediaCard.module.css): apresentação do pôster, mensagem quando falta sua URL e quebra de textos longos.
 - [SearchBar.module.css](../../src/components/SearchBar/SearchBar.module.css): formulário responsivo, campo, botão e estados de interação.
+- [SearchPage.module.css](../../src/features/search/SearchPage.module.css): disposição, rótulo e estados do seletor de conteúdo.
+- [SearchResults.module.css](../../src/features/search/SearchResults.module.css): seção de resultados e grade responsiva dos cards.
+- [Pagination.module.css](../../src/components/Pagination/Pagination.module.css): disposição dos controles, estados disponíveis e indisponíveis e foco visível.
 
 CSS Modules dá escopo local aos nomes das classes. As variáveis definidas no `:root` continuam disponíveis por herança. Seletores como `.app h1` ainda alcançam os títulos descendentes da estrutura, inclusive os renderizados por outros componentes.
 
@@ -128,6 +135,34 @@ A Home apresenta carregamento com `role="status"` e erro com `role="alert"`. Ap�
 
 A SearchBar permanece disponível durante carregamento e erro. O cancelamento ao sair da Home não é apresentado como falha da consulta.
 
+## Busca e paginação
+
+A busca apresenta formulário rotulado e seletor de Todos, Filmes e
+Séries. Digitar altera somente o rascunho; a consulta acontece por
+submit. Trocar o filtro preserva o termo enviado e reinicia a página.
+Refresh, URL copiada e histórico recuperam o contexto da busca.
+
+A página usa `h1`, a seção de resultados usa `h2` e os cards usam `h3`.
+A grade segue a mesma regra responsiva da Home. O seletor usa
+`surface/onSurface`, borda em `onSurfaceVariant` e foco em `primary`.
+
+Carregamento e vazio usam `role="status"`; erro usa `role="alert"`.
+O formulário e o filtro permanecem disponíveis durante a consulta e
+após uma falha. Cancelamento não é apresentado como erro.
+
+O vazio é comunicado como “Nenhum filme ou série nesta página”.
+Em Todos, pessoas são descartadas da resposta, então uma página sem
+cards pode continuar tendo próximas páginas disponíveis.
+
+Pagination apresenta Anterior, página atual e Próxima em uma navegação
+rotulada. Durante o carregamento, `aria-busy` comunica a atualização.
+Ações indisponíveis usam `aria-disabled`, estilos próprios e guardas
+nos eventos. Os botões permanecem no fluxo de foco.
+
+Os controles ficam fora do componente de resultados que reinicia a
+cada consulta, preservando seus elementos e o foco durante a navegação.
+A disposição permite quebra de linha em telas estreitas.
+
 ## Validação de alterações visuais
 
 Ao alterar o tema ou o layout, conferir:
@@ -139,6 +174,8 @@ Ao alterar o tema ou o layout, conferir:
 5. Contraste das combinações efetivamente usadas. O arquivo de tema é uma referência; a acessibilidade também depende de como as cores e os componentes são aplicados.
 6. SearchBar: clique no rótulo, foco do campo e do botão habilitado, envio por Enter e botão e estado desativado para texto vazio.
 7. Home: mensagens de carregamento, vazio e erro, proporção dos pôsteres e quebra de títulos longos.
+8. Busca: rótulo e teclado do seletor, hierarquia dos resultados e feedback de carregamento, vazio e erro.
+9. Paginação: limites, ações indisponíveis, foco preservado durante a consulta, indicação da página e disposição em telas estreitas.
 
 Se forem adicionadas animações, respeitar a preferência por movimento reduzido.
 
